@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Qute - Items</title> 
+</head>
+<body>
+    <h1>List of Items</h1>
+    <ul>
+        {#for item in items}
+        <li>
+            {item.name}:
+            
+            {#fragment id=price}
+            <div hx-target="this" hx-swap="outerHTML">
+              {#if item.price < 15}
+              {item.price}
+              {#else}
+              <del>{item.price}</del> <strong>{item.discountedPrice}</strong>
+              {/if}
+              <button hx-get="{uri:Items.editPrice(item.name)}">Edit</button>
+            </div>
+            {/fragment}
+            {#fragment id=priceEdit rendered=false}
+            <form hx-put="{uri:Items.savePrice(item.name)}">
+               <input type="text" name="price" value="{item.price}">
+               <button type="submit">Save</button>
+            </form>
+            {/fragment}
+        </li>
+        {/for}
+    </ul>
+    
+    <script src="/webjars/htmx.org/1.8.2/dist/htmx.min.js"></script>
+</body>
+</html>
