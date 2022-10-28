@@ -15,16 +15,13 @@ import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.smallrye.common.annotation.Blocking;
 import model.Item;
+import util.tags;
 
 @Blocking
 public class Items extends Controller {
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance items(List<Item> items);
-        @CheckedFragment
-        public static native TemplateInstance items$price(Item item);
-        @CheckedFragment
-        public static native TemplateInstance items$priceEdit(Item item);
     }
 
     @Path("/")
@@ -34,7 +31,7 @@ public class Items extends Controller {
 
     public TemplateInstance itemPrice(@RestPath String name) {
         Item item = Item.findByName(name);
-        return Templates.items$price(item);
+        return tags.price(item);
     }
 
     @PUT
@@ -46,6 +43,6 @@ public class Items extends Controller {
 
     public TemplateInstance editPrice(@RestPath String name) {
         Item item = Item.findByName(name);
-        return Templates.items$priceEdit(item);
+        return tags.priceEdit(item);
     }
 }

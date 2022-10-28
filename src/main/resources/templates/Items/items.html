@@ -10,23 +10,7 @@
         {#for item in items}
         <li>
             {item.name}:
-            
-            {#fragment id=price}
-            <div hx-target="this" hx-swap="outerHTML">
-              {#if item.price < 15}
-              {item.price}
-              {#else}
-              <del>{item.price}</del> <strong>{item.discountedPrice}</strong>
-              {/if}
-              <button hx-get="{uri:Items.editPrice(item.name)}">Edit</button>
-            </div>
-            {/fragment}
-            {#fragment id=priceEdit rendered=false}
-            <form hx-put="{uri:Items.savePrice(item.name)}">
-               <input type="text" name="price" value="{item.price}">
-               <button type="submit">Save</button>
-            </form>
-            {/fragment}
+            {#price item/}
         </li>
         {/for}
     </ul>

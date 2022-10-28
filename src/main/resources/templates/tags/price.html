@@ -1,0 +1,8 @@
+<div hx-target="this" hx-swap="outerHTML">
+  {#if item.price < 15}
+  {item.price}
+  {#else}
+  <del>{item.price}</del> <strong>{item.discountedPrice}</strong>
+  {/if}
+  <button hx-get="{uri:Items.editPrice(item.name)}">Edit</button>
+</div>
