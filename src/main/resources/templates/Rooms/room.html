@@ -7,17 +7,17 @@
 <body>
 	<a href="{uri:Rooms.rooms()}">All Rooms</a>
 	{#roomName room/}
-	{!
-    <div id="messages" hx-sse="connect:{uri:Rooms.messagesSse(room.id)} swap:message">
-    </div>
-    !}
-    <div id="messages">
+   	<button hx-post="{uri:Rooms.clear(room.id)}" hx-target="#messages">Clear</button>
+    <div id="messages" hx-sse="connect:{uri:Rooms.messagesSse(room.id)} swap:message" hx-swap="beforeend">
+    	<!-- Initial list not sent via SSE -->
     	{#for message in room.messages}
             {#message message/}
         {/for}
     </div>
-    <form hx-post="{uri:Rooms.addMessage(room.id)}" hx-target="#messages" hx-swap="beforeend">
-    	<input name="text"/>
+    <form hx-post="{uri:Rooms.addMessage(room.id)}">
+    	{#fragment id=textfield}
+    	<input name="text" autofocus/>
+    	{/fragment}
     </form>
     <script src="/webjars/htmx.org/1.8.2/dist/htmx.min.js"></script>
 </body>

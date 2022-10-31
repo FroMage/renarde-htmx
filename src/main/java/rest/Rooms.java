@@ -2,8 +2,6 @@ package rest;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -12,9 +10,9 @@ import javax.ws.rs.core.MediaType;
 
 import org.jboss.resteasy.reactive.RestForm;
 import org.jboss.resteasy.reactive.RestPath;
-import org.jboss.resteasy.reactive.RestSseElementType;
 
 import io.quarkiverse.renarde.Controller;
+import io.quarkus.qute.CheckedFragment;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.smallrye.common.annotation.Blocking;
@@ -26,13 +24,12 @@ import util.tags;
 @Blocking
 public class Rooms extends Controller {
     
-    // This doesn't look like the right way to do it, does it?
-    Map<Room, Multi<TemplateInstance>> roomMessages = new ConcurrentHashMap<>();
-    
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance rooms(List<Room> rooms);
         public static native TemplateInstance room(Room room);
+        @CheckedFragment
+        public static native TemplateInstance room$textfield();
     }
 
     @Path("/rooms")
@@ -46,20 +43,20 @@ public class Rooms extends Controller {
         return Templates.room(room);
     }
 
-//    @Produces(MediaType.SERVER_SENT_EVENTS)
-//    public Multi<TemplateInstance> messagesSse(@RestPath long roomId) {
-//        Room room = Room.findById(roomId);
-//        notFoundIfNull(room);
-//        Room.listen(event -> {
-//            
-//        });
-//        Multi.createFrom().emitter(emitter -> {
-//            roomMessages.computeIfAbsent(room, emitter);
-//            for(Message msg : room.messages) {
-//                emitter.emit(tags.message(msg));
-//            }
-//        });
-//    }
+    @Produces(MediaType.SERVER_SENT_EVENTS)
+    public Multi<String> messagesSse(@RestPath long roomId) {
+        Room room = Room.findById(roomId);
+        notFoundIfNull(room);
+        return Multi.createFrom().emitter(emitter -> {
+            // only send new messages for this room
+            Runnable removeListener = room.listen(message -> {
+                emitter.emit(tags.message(message).render());
+            });
+            emitter.onTermination(() -> {
+                removeListener.run();
+            });
+        });
+    }
     
     @POST
     public TemplateInstance addMessage(@RestPath long roomId, @RestForm String text){
@@ -70,7 +67,16 @@ public class Rooms extends Controller {
         msg.text = text;
         msg.room = room;
         msg.persist();
-        return tags.message(msg);
+        return Templates.room$textfield();
+    }
+
+    @POST
+    public String clear(@RestPath long roomId){
+        Room room = Room.findById(roomId);
+        notFoundIfNull(room);
+        Message.delete("room", room);
+        // TODO: find better to clear the #messages div
+        return "";
     }
 
     @POST
