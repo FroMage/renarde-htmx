@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Qute - Room {room.name}</title> 
+</head>
+<body>
+	<a href="{uri:Rooms.rooms()}">All Rooms</a>
+	{#roomName room/}
+	{!
+    <div id="messages" hx-sse="connect:{uri:Rooms.messagesSse(room.id)} swap:message">
+    </div>
+    !}
+    <div id="messages">
+    	{#for message in room.messages}
+            {#message message/}
+        {/for}
+    </div>
+    <form hx-post="{uri:Rooms.addMessage(room.id)}" hx-target="#messages" hx-swap="beforeend">
+    	<input name="text"/>
+    </form>
+    <script src="/webjars/htmx.org/1.8.2/dist/htmx.min.js"></script>
+</body>
+</html>
